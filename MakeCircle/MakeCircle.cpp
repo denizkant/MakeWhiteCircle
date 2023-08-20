@@ -112,11 +112,19 @@ int main(int, char**)
     io.IniFilename = nullptr;
     EMSCRIPTEN_MAINLOOP_BEGIN
 #else
-    auto last_pos = ImVec2(0, 0);
+    auto last_pos_white = ImVec2(0, 0);
     float circle_radius = 0;
-    auto last_pos2 = ImVec2(0, 0);
+    auto last_pos_colourful = ImVec2(0, 0);
     std::vector<ImVec2> points;
     std::vector<ImVec4> circle_colors;
+    const auto window_flags =
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar; //It prevents the user from moving the window, prevents 
+    //the user from double-clicking, and disables the scrollbar.
+    const auto window_size = ImVec2(1280.0F, 720.0F); //Created a fixed window size
+    const auto window_pos = ImVec2(0.0F, 0.0F); //The position of the window is determined
+    bool clicked = false; // To prevent the first circle from being drawn without the first click
+
 
     while (!glfwWindowShouldClose(window))
 #endif
@@ -131,32 +139,27 @@ int main(int, char**)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        constexpr static auto window_flags =
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
-        constexpr static auto window_size = ImVec2(1280.0F, 720.0F);
-        constexpr static auto window_pos = ImVec2(0.0F, 0.0F);
+
 
         ImGui::SetNextWindowSize(ImVec2(600, 600));
         ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::Begin("Circle Animation", nullptr, window_flags);
+        ImGui::Begin("Circle Animation", nullptr, window_flags); //The window is created by considering the above flags.
 
-        auto* draw_list = ImGui::GetWindowDrawList();
-        static bool clicked = false; // First control for click
+        auto* draw_list_white = ImGui::GetWindowDrawList(); //Provides access to the drawing list of the ImGui window.
 
-        if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
+        if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())//Makes it return true when the left mouse button is clicked and returns
+                                                                 //true when the left mouse button is clicked
         {
-
-            last_pos = ImGui::GetIO().MousePos;
+            last_pos_white = ImGui::GetIO().MousePos; //Returns the instantaneous X and Y coordinates of the mouse cursor via ImGui's Input/Output (IO) system.
             circle_radius = 0; // Reset the radius when clicked
-            clicked = true; // Tıklama oldu
+            clicked = true; 
         }
 
         if (clicked && circle_radius < 30)
             circle_radius += 1; // Increase the radius for animation
 
         if(clicked)
-            draw_list->AddCircleFilled(last_pos, circle_radius, IM_COL32(255, 255, 255, 255));
+            draw_list_white->AddCircleFilled(last_pos_white, circle_radius, IM_COL32(255, 255, 255, 255)); //Bright white is created with Red, Green, Blue, Alpha
 
         ImGui::End();
 
@@ -165,18 +168,18 @@ int main(int, char**)
         ImGui::SetNextWindowSize(ImVec2(600, 600));
         ImGui::SetNextWindowPos(ImVec2(675,0));
         ImGui::Begin("Circle Animation2", nullptr, window_flags);
-        auto* draw_list2 = ImGui::GetWindowDrawList();
+        auto* draw_list_colourful = ImGui::GetWindowDrawList();
 
         if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(0))
         {
-            last_pos2 = ImGui::GetIO().MousePos;
-            points.push_back(last_pos2);
+            last_pos_colourful = ImGui::GetIO().MousePos;
+            points.push_back(last_pos_colourful);
 
             // Generate a random color for the new circle
             ImVec4 random_color = ImVec4(
-                static_cast<float>(rand() % 256) / 255.0f,
-                static_cast<float>(rand() % 256) / 255.0f,
-                static_cast<float>(rand() % 256) / 255.0f,
+                static_cast<float>(rand() % 256),
+                static_cast<float>(rand() % 256),
+                static_cast<float>(rand() % 256),
                 1.0f
             );
 
@@ -188,10 +191,10 @@ int main(int, char**)
             const ImVec2& point = points[i];
             const ImVec4& color = circle_colors[i];
 
-            draw_list2->AddCircleFilled(point, 30, IM_COL32(
-                static_cast<int>(color.x * 255),
-                static_cast<int>(color.y * 255),
-                static_cast<int>(color.z * 255),
+            draw_list_colourful->AddCircleFilled(point, 30, IM_COL32(
+                static_cast<int>(color.x),
+                static_cast<int>(color.y),
+                static_cast<int>(color.z),
                 255
             ));
         }
