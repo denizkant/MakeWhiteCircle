@@ -7,6 +7,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_opengl3_loader.h"
+#include <cstdlib> // this header for the rand() function
+#include <vector>
 #include <stdio.h>
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -112,6 +114,9 @@ int main(int, char**)
 #else
     auto last_pos = ImVec2(0, 0);
     float circle_radius = 0;
+    auto last_pos2 = ImVec2(0, 0);
+    std::vector<ImVec2> points;
+    std::vector<ImVec4> circle_colors;
 
     while (!glfwWindowShouldClose(window))
 #endif
@@ -127,29 +132,81 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         constexpr static auto window_flags =
-            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
         constexpr static auto window_size = ImVec2(1280.0F, 720.0F);
         constexpr static auto window_pos = ImVec2(0.0F, 0.0F);
 
-        ImGui::SetNextWindowSize(ImVec2(1280, 720));
+        ImGui::SetNextWindowSize(ImVec2(600, 600));
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::Begin("Circle Animation", nullptr, window_flags);
 
         auto* draw_list = ImGui::GetWindowDrawList();
+        static bool clicked = false; // First control for click
 
-        if (ImGui::GetIO().MouseClicked[0])
+        if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
         {
+
             last_pos = ImGui::GetIO().MousePos;
             circle_radius = 0; // Reset the radius when clicked
+            clicked = true; // Tıklama oldu
         }
 
-        if (circle_radius < 30)
+        if (clicked && circle_radius < 30)
             circle_radius += 1; // Increase the radius for animation
 
-        draw_list->AddCircleFilled(last_pos, circle_radius, IM_COL32(255, 255, 255, 255));
+        if(clicked)
+            draw_list->AddCircleFilled(last_pos, circle_radius, IM_COL32(255, 255, 255, 255));
 
         ImGui::End();
+
+
+
+        ImGui::SetNextWindowSize(ImVec2(600, 600));
+        ImGui::SetNextWindowPos(ImVec2(675,0));
+        ImGui::Begin("Circle Animation2", nullptr, window_flags);
+        auto* draw_list2 = ImGui::GetWindowDrawList();
+
+        if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(0))
+        {
+            last_pos2 = ImGui::GetIO().MousePos;
+            points.push_back(last_pos2);
+
+            // Generate a random color for the new circle
+            ImVec4 random_color = ImVec4(
+                static_cast<float>(rand() % 256) / 255.0f,
+                static_cast<float>(rand() % 256) / 255.0f,
+                static_cast<float>(rand() % 256) / 255.0f,
+                1.0f
+            );
+
+            circle_colors.push_back(random_color);
+        }
+
+        for (size_t i = 0; i < points.size(); ++i)
+        {
+            const ImVec2& point = points[i];
+            const ImVec4& color = circle_colors[i];
+
+            draw_list2->AddCircleFilled(point, 30, IM_COL32(
+                static_cast<int>(color.x * 255),
+                static_cast<int>(color.y * 255),
+                static_cast<int>(color.z * 255),
+                255
+            ));
+        }
+        ImGui::SetCursorPos(ImVec2(ImGui::GetContentRegionAvail().x - 100, ImGui::GetContentRegionAvail().y - 30));
+
+        if (ImGui::Button("Clear All"))
+        {
+            points.clear();
+        }
+
+
+        ImGui::End();
+
+
+
 
         // Rendering
         ImGui::Render();

@@ -1,11 +1,2 @@
-﻿  imgui_impl_glfw.cpp
-  imgui_impl_opengl3.cpp
-  imgui.cpp
-  imgui_demo.cpp
-  imgui_draw.cpp
-  imgui_tables.cpp
-  imgui_widgets.cpp
-  MakeCircle.cpp
-  Kod Üretiliyor...
-LINK : warning LNK4098: defaultlib 'MSVCRT' diğer kitaplıkların kullanımı ile çakışıyor; /NODEFAULTLIB:library kullanın
-  MakeCircle.vcxproj -> C:\Users\Win 10\source\repos\Projeler\MakeCircle\x64\Debug\MakeCircle.exe
+﻿  MakeCircle.cpp
+  MakeCircle.vcxproj -> C:\Users\Win 10\source\repos\Projeler\MakeWhiteCircle\x64\Debug\MakeCircle.exe
